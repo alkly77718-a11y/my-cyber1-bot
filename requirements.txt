@@ -1,0 +1,5 @@
+python-telegram-bot
+feedparser
+google-generativeai
+httpx
+flask
