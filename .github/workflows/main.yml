@@ -3,13 +3,17 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+      - name: Install System Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y zip unzip python3-dev libffi-dev libssl-dev libltdl-dev git openjdk-17-jdk
       - name: Cache Buildozer
         uses: actions/cache@v2
         id: cache
@@ -17,12 +21,9 @@ jobs:
           path: ~/.buildozer
           key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
           restore-keys: ${{ runner.os }}-buildozer-
-      - name: Install & Build
+      - name: Build APK
         run: |
-          sudo apt update && sudo apt install -y zip unzip
-          pip install --upgrade pip cython virtualenv
-          pip install buildozer
-          buildozer init
+          pip install --upgrade pip Cython virtualenv buildozer
           buildozer android debug
       - name: Upload APK
         uses: actions/upload-artifact@v2
