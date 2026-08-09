@@ -1,0 +1,31 @@
+name: ⚡ Nuclear Build
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Cache Buildozer
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: ~/.buildozer
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+          restore-keys: ${{ runner.os }}-buildozer-
+      - name: Install & Build
+        run: |
+          sudo apt update && sudo apt install -y zip unzip
+          pip install --upgrade pip cython virtualenv
+          pip install buildozer
+          buildozer init
+          buildozer android debug
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: black-army-apk
+          path: bin/*.apk
